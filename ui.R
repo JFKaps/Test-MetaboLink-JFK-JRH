@@ -422,6 +422,163 @@ shinyUI(dashboardPage(
                 ))
               ),
             ),
+            
+            
+            #### Heatmap
+            
+            tabPanel("Lipid Heatmap",
+                     useShinyjs(),
+                     tabsetPanel(
+                       
+                       tabPanel("Group selection",
+                                fluidRow(
+                                  column(6, box(
+                                    width = NULL,
+                                    title = "User guide",
+                                    tags$ul(
+                                      tags$li("Select the data frame to use."),
+                                      tags$li("Click 'Run Data Processing' to start the analysis."),
+                                      tags$li("After data processing select the numerator and denominator groups."),
+                                      conditionalPanel(
+                                        condition = "input.run_process > 0", # Only display the following if data processing has been triggered.
+                                        tableOutput("groups_table"), # Shows table of groups.
+                                      )
+                                    )
+                                  )),
+                                  column(6, box(
+                                    width = NULL, 
+                                    title = "Select Data Frame", 
+                                    radioButtons("selected_dataset", "Select data frame:",
+                                                 choices = c("Original Data" = "original", "Merged Data" = "merged"),
+                                                 selected = "original", width = "50%"),
+                                    
+                                    column(6, 
+                                           actionButton("run_process", "Run Data Processing"),
+                                           uiOutput("select_group_ui_heatmap"),
+                                           tableOutput("numerator_table"),
+                                           tableOutput("denominator_table"),
+                                           conditionalPanel(
+                                             condition = "input.run_process > 0", 
+                                             actionButton("show_lipid_info", "Show Lipid Summary"),
+                                             actionButton("show_lipid_cal", "Show Calculation Summary")
+                                             
+                                           )
+                                    )
+                                  ))
+                                ),
+                                
+                                conditionalPanel(
+                                  condition = "input.run_process > 0", 
+                                  column(6, box(
+                                    title = "Numerator Group Table",
+                                    width = NULL,
+                                    DT::dataTableOutput("numerator_group_table")  
+                                  )),
+                                  column(6, box(
+                                    title = "Denominator Group Table",
+                                    width = NULL,
+                                    DT::dataTableOutput("denominator_group_table")  
+                                  ))
+                                )
+                       ),
+                       
+                       ####  VISUALIZATION TAB 
+                       
+                       tabPanel(
+                         "Lipid Visualization",
+                         conditionalPanel(
+                           condition = "input.run_process > 0",
+                           # First row with Lipid Selection and Plot Settings side by side
+                           fluidRow(
+                             # Column for Lipid Selection and Plot Settings
+                             column(
+                               width = 6,
+                               box(
+                                 width = NULL,
+                                 title = "Plot Settings", solidHeader = TRUE,
+                                 uiOutput("select_lipid_ui"),
+                                 tags$li("Lipids will show up both on Lipid Heatmap and Bubble plot if they are within the threshold of p-value and logFC."),
+                                 br(),
+                                 br(),
+                                 uiOutput("logFC_input_ui"),
+                                 uiOutput("p_value_max_ui"),
+                                 uiOutput("p_value_adj"),
+                                 uiOutput("min_lipids_per_class_ui"),
+                                 checkboxInput("split_screen", "Show Heatmap and Table side by side", value = FALSE),
+                                 checkboxInput("show_grid", "Display Grid Lines", value = TRUE),
+                                 br(),
+                                 # Add the action button to open the modal dialog
+                                 actionButton("download_heatmap_btn", "Download Heatmap Image"),
+                                 br(),
+                                 # Add the UI output for the warning message
+                                 uiOutput("filteredDataWarning")
+                               )
+                             ),
+                             
+                             # Column for Color Settings (no changes)
+                             column(
+                               width = 6,
+                               box(
+                                 width = NULL,
+                                 title = "Color Settings", solidHeader = TRUE,
+                                 colourInput("low_color", "Negative logFC color", value = "#4575b4"),
+                                 colourInput("mid_color", "Mid logFC Color", value = "white"),
+                                 colourInput("high_color", "Positive logFC color", value = "#d73027"),
+                                 colourInput("panel_bg_color", "Panel Background Color", value = "#D3D3D3"),
+                                 colourInput("strip_bg_color", "Strip Background Color", value = "#3483d1"),
+                                 colourInput("strip_text_color", "Strip Text Color", value = "black"),
+                                 uiOutput("logFC_scale_ui"),  # New input for plot scale
+                                 radioButtons(
+                                   inputId = "logFC_scale_ui",
+                                   label = "Select logFC Threshold Mode:",
+                                   choices = c("Manual Threshold" = "manual", "Dynamic Range" = "dynamic"),
+                                   selected = "manual"
+                                 ),
+                                 
+                                 
+                               )
+                             )
+                           )
+                         ),
+                         
+                         # Output for the visualization
+                         uiOutput("visualization_ui"),
+                         tags$div(
+                           class = "alert-warning",
+                           uiOutput("table_message_2")
+                         )
+                       ),
+                       
+                       ####  HEATMAP TABLE TAB 
+                       
+                       tabPanel(
+                         "Table of Heatmap",
+                         column(width = 12,
+                                dataTableOutput("pValueTable")
+                         ),
+                         tags$div(
+                           class = "alert-warning",
+                           uiOutput("table_message_3")
+                         )
+                       ),
+                       
+                       ####  BUBBLE PLOT TAB
+                       
+                       tabPanel(
+                         "Bubble plot of data",
+                         
+                         uiOutput("bubble_plot_ui"),
+                         tags$div(
+                           class = "alert-warning", # You can change this to 'alert-success', 'alert-warning', etc.
+                           uiOutput("table_message")
+                         )
+                       )
+                       
+                     )
+            ),
+            
+            
+            
             tabPanel("Feature drift",
               fluidRow(
                 column(3, box(width = NULL, DTOutput("dt_drift_panel"))),

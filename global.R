@@ -18,6 +18,10 @@ library(stringi)
 library(BiocManager)
 library(shinycssloaders)
 library(jsonlite)
+library("lipidomeR") # new, used in Lipid Heatmap
+library(colourpicker) # new, used in Lipid Heatmap
+library(shinycssloaders) # new, used in Lipid Heatmap
+
 #options(repos = BiocManager::repositories())
 source("functions.R")
 
